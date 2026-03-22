@@ -1,6 +1,6 @@
 import requests
-
-API_KEY = "AIzaSyA_9Ra0OXOv4wI7OZo7UhshLoLOCOm_PfU"
+import os
+API_KEY = os.getenv("API_KEY")
 
 # ---------------------------------------
 # Extract meaningful claim
