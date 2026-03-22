@@ -1,6 +1,6 @@
 import requests
 import os
-API_KEY = "AIzaSyA_9Ra0OXOv4wI7OZo7UhshLoLOCOm_PfU"
+API_KEY = "Your_Api_Key"
 
 # ---------------------------------------
 # Extract meaningful claim
