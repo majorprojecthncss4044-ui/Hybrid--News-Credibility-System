@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from utils.bert_scorer import get_bert_score
 from utils.fact_checker import check_fact_claim
-
+from utils.writing_quality import writing_quality
 print("Loaded Scoring Engine from:", __file__)
 
 # --------------------------------
@@ -51,10 +51,10 @@ trusted_sources = {
     "washingtonpost.com": 90,
     "forbes.com": 85,
     "bloomberg.com": 95,
-    "zeenews.india.com": 75,
+    "zeenews.india.com": 80,
     "aajtak.in":80,
     "indiatoday.in": 85,
-    "republicworld.com": 75,
+    "republicworld.com": 80,
     "abplive.com": 80,
     "hindustantimes.com": 88,
     "timesofindia.indiatimes.com": 85,
@@ -87,28 +87,7 @@ def get_source_score(url):
         return 60
 
 
-# --------------------------------
-# Writing Quality Score
-# --------------------------------
 
-sensational_words = [
-    "shocking", "unbelievable", "miracle", "exposed", "secret",
-    "truth revealed", "you won't believe", "breaking!!!",
-    "must watch", "100% proof"
-]
-
-def get_writing_quality_score(text):
-    text = text.lower()
-    count = sum(word in text for word in sensational_words)
-
-    if count == 0:
-        return 90
-    elif count == 1:
-        return 70
-    elif count == 2:
-        return 50
-    else:
-        return 30
 
 # =====================================
 # DATASET PIPELINE (TEXT INPUT)
@@ -177,8 +156,7 @@ def dataset_score(text):
         "Final Hybrid Score": final_score,
         "Credibility Level": level,
         "Explanation": " ".join(explanation)
-    }
-
+    } 
 
 # =====================================
 # LIVE NEWS PIPELINE (URL INPUT)
