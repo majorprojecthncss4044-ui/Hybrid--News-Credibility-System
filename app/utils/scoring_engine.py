@@ -193,79 +193,95 @@ def live_news_score(text, url):
     writing_score = get_writing_quality_score(text)
     fact_score, fact_explanation = check_fact_claim(text)
 
-    # -----------------------------------------
-    # SMART WEIGHTING LOGIC (NEW)
-    # -----------------------------------------
+ # ---------------------------------------
+# SMART PRIORITY WEIGHTING
+# ---------------------------------------
 
-    if fact_score != 60:
-        # Fact check is meaningful → give it HIGH importance
-        final_score = (
-            0.8 * fact_score +
-            0.1 * source_score +
-            0.1 * writing_score
-        )
-        fact_mode = True
-    else:
-        # Fact check unavailable → fallback to OLD weights
-        final_score = (
-            0.5 * source_score +
-            0.2 * writing_score +
-            0.3 * fact_score
-        )
-        fact_mode = False
+if fact_score != 60:
+    # 🔥 Fact check dominates (but still consider source slightly)
+    final_score = (
+        0.85 * fact_score +
+        0.10 * source_score +
+        0.05 * writing_score
+    )
+    mode = "FACT_PRIORITY"
 
-    # Clamp
-    final_score = round(max(0, min(100, final_score)), 2)
+elif source_score != 60:
+    # 🔥 Trusted source dominates
+    final_score = (
+        0.70 * source_score +
+        0.20 * writing_score +
+        0.10 * fact_score
+    )
+    mode = "SOURCE_PRIORITY"
 
-    # -----------------------------------------
-    # Credibility Level
-    # -----------------------------------------
+else:
+    # 🔄 Fallback (no strong signals)
+    final_score = (
+        0.50 * source_score +
+        0.25 * writing_score +
+        0.25 * fact_score
+    )
+    mode = "BALANCED"
 
-    if final_score >= 75:
-        level = "HIGH"
-    elif final_score >= 50:
-        level = "MEDIUM"
-    else:
-        level = "LOW"
+# Clamp
+final_score = round(max(0, min(100, final_score)), 2)
 
-    # -----------------------------------------
-    # Explanation (UPGRADED)
-    # -----------------------------------------
 
-    explanation = []
+# ---------------------------------------
+# Credibility Level
+# ---------------------------------------
 
-    # Source explanation
-    if source_score >= 90:
-        explanation.append("Article originates from a highly trusted news organization.")
-    elif source_score < 70:
-        explanation.append("Article source has limited or unknown credibility.")
+if final_score >= 75:
+    level = "HIGH"
+elif final_score >= 50:
+    level = "MEDIUM"
+else:
+    level = "LOW"
 
-    # Writing explanation
-    if writing_score >= 80:
-        explanation.append("Writing style resembles professional journalism.")
-    elif writing_score <= 50:
-        explanation.append("Sensational or exaggerated language detected.")
 
-    # Fact check explanation
-    if fact_mode:
-        explanation.append("Fact-check verification strongly influenced the final score.")
-    else:
-        explanation.append("Fact-check data unavailable, fallback scoring applied.")
+# ---------------------------------------
+# Explanation
+# ---------------------------------------
 
-    explanation.append(fact_explanation)
+explanation = []
 
-    # -----------------------------------------
-    # Output
-    # -----------------------------------------
+# ✅ Source explanation (FIXED CONDITION)
+if source_score >= 85:
+    explanation.append("Article originates from a highly trusted news organization.")
+elif source_score < 70:
+    explanation.append("Article source has limited or unknown credibility.")
 
-    return {
-        "Source Score": source_score,
-        "Writing Quality Score": writing_score,
-        "Fact Check Score": fact_score,
-        "Final Score": final_score,
-        "Credibility Level": level,
-        "Explanation": " ".join(explanation)
-    }
+# ✅ Writing explanation
+if writing_score >= 80:
+    explanation.append("Writing style resembles professional journalism.")
+elif writing_score <= 50:
+    explanation.append("Sensational or exaggerated language detected.")
+
+# ✅ Fact explanation
+explanation.append(fact_explanation)
+
+# ✅ Mode explanation (VERY IMPORTANT)
+if mode == "FACT_PRIORITY":
+    explanation.append("Fact-check verification had the highest influence on the final score.")
+elif mode == "SOURCE_PRIORITY":
+    explanation.append("Trusted source credibility had the highest influence on the final score.")
+else:
+    explanation.append("Balanced scoring applied due to lack of strong signals.")
+
+# ---------------------------------------
+# Output
+# ---------------------------------------
+
+return {
+    "Source Score": source_score,
+    "Writing Quality Score": writing_score,
+    "Fact Check Score": fact_score,
+    "Final Score": final_score,
+    "Credibility Level": level,
+    "Explanation": " ".join(explanation)
+}
+
 
 
 
