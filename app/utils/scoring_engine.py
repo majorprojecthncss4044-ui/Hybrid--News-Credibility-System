@@ -110,12 +110,10 @@ def get_writing_quality_score(text):
     else:
         return 30
 
-
 # =====================================
 # DATASET PIPELINE (TEXT INPUT)
 # ML + BERT
 # =====================================
-
 def dataset_score(text):
 
     text = text[:2000]
@@ -195,13 +193,33 @@ def live_news_score(text, url):
     writing_score = get_writing_quality_score(text)
     fact_score, fact_explanation = check_fact_claim(text)
 
-    final_score = (
-        0.5 * source_score +
-        0.2 * writing_score +
-        0.3 * fact_score
-    )
+    # -----------------------------------------
+    # SMART WEIGHTING LOGIC (NEW)
+    # -----------------------------------------
 
+    if fact_score != 60:
+        # Fact check is meaningful → give it HIGH importance
+        final_score = (
+            0.8 * fact_score +
+            0.1 * source_score +
+            0.1 * writing_score
+        )
+        fact_mode = True
+    else:
+        # Fact check unavailable → fallback to OLD weights
+        final_score = (
+            0.5 * source_score +
+            0.2 * writing_score +
+            0.3 * fact_score
+        )
+        fact_mode = False
+
+    # Clamp
     final_score = round(max(0, min(100, final_score)), 2)
+
+    # -----------------------------------------
+    # Credibility Level
+    # -----------------------------------------
 
     if final_score >= 75:
         level = "HIGH"
@@ -210,19 +228,35 @@ def live_news_score(text, url):
     else:
         level = "LOW"
 
+    # -----------------------------------------
+    # Explanation (UPGRADED)
+    # -----------------------------------------
+
     explanation = []
 
+    # Source explanation
     if source_score >= 90:
         explanation.append("Article originates from a highly trusted news organization.")
     elif source_score < 70:
         explanation.append("Article source has limited or unknown credibility.")
 
+    # Writing explanation
     if writing_score >= 80:
         explanation.append("Writing style resembles professional journalism.")
     elif writing_score <= 50:
         explanation.append("Sensational or exaggerated language detected.")
 
+    # Fact check explanation
+    if fact_mode:
+        explanation.append("Fact-check verification strongly influenced the final score.")
+    else:
+        explanation.append("Fact-check data unavailable, fallback scoring applied.")
+
     explanation.append(fact_explanation)
+
+    # -----------------------------------------
+    # Output
+    # -----------------------------------------
 
     return {
         "Source Score": source_score,
@@ -232,3 +266,6 @@ def live_news_score(text, url):
         "Credibility Level": level,
         "Explanation": " ".join(explanation)
     }
+
+
+
