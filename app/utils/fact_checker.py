@@ -1,12 +1,14 @@
 import requests
+import streamlit as st
 
-API_KEY = "YOUR_API_KEY"
+API_KEY = st.secrets["FACT_CHECK_API_KEY"]
+
 
 def check_fact_claim(text):
     url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
 
     params = {
-        "query": text[:200],   # only send first 200 chars
+        "query": text[:200],  # only send first 200 chars
         "key": API_KEY
     }
 
@@ -24,12 +26,10 @@ def check_fact_claim(text):
 
         if "true" in rating:
             return 95, "Claim verified as TRUE by fact-checkers."
-
         elif "false" in rating:
             return 10, "Claim verified as FALSE by fact-checkers."
-
         else:
             return 50, f"Fact-check result: {rating}"
 
     except Exception:
-        return 60, "Fact check unavailable."
+        return 60, "Fact check unavailable.”
