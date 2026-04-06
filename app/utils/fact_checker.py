@@ -1,19 +1,12 @@
 import requests
-import streamlit as st
 
-# Read API key from Streamlit secrets
-API_KEY = st.secrets.get("FACT_CHECK_API_KEY")
-
+API_KEY = "AIzaSyA_9Ra0OXOv4wI7OZo7UhshLoLOCOm_PfU"
 
 def check_fact_claim(text):
-    # If API key missing
-    if not API_KEY:
-        return 60, "Fact check unavailable."
-
     url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
 
     params = {
-        "query": text[:200],  # only send first 200 chars
+        "query": text[:200],   # only send first 200 chars
         "key": API_KEY
     }
 
