@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = "AIzaSyA_9Ra0OXOv4wI7OZo7UhshLoLOCOm_PfU"
+API_KEY = "YOUR_API_KEY"
 
 def check_fact_claim(text):
     url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
