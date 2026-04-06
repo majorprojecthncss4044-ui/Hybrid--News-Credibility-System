@@ -1,13 +1,12 @@
 import requests
 import streamlit as st
 
-# Read API key safely
-API_KEY = st.secrets.get("FACT_CHECK_API_KEY", None)
+# Read API key from Streamlit secrets
+API_KEY = st.secrets.get("FACT_CHECK_API_KEY")
 
 
 def check_fact_claim(text):
-
-    # If API key missing → fallback
+    # If API key missing
     if not API_KEY:
         return 60, "Fact check unavailable."
 
@@ -40,4 +39,4 @@ def check_fact_claim(text):
             return 50, f"Fact-check result: {rating}"
 
     except Exception:
-        return 60, "Fact check unavailable.”
+        return 60, "Fact check unavailable."
